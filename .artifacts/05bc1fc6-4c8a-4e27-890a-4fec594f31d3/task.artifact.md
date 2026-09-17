@@ -1,0 +1,2 @@
+- [x] Create base MVVM package structure
+- [x] Create domain/model/Task.kt data class
