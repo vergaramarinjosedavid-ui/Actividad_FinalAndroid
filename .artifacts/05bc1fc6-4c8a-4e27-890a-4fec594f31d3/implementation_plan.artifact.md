@@ -1,35 +1,26 @@
-# Implementation Plan - MVVM Directory Structure
+# Implementation Plan - Domain Repository Interfaces
 
-This plan outlines the creation of a standard MVVM directory and package structure for the `Actividad_FinalAndroid` project.
-
-## User Review Required
-
-> [!NOTE]
-> I will be using the project's existing main package `com.example.actividad_finalandroid` as the root for these directories to ensure compatibility with the current `AndroidManifest.xml` and `build.gradle.kts` configuration.
+This plan details the creation of the two domain repository interfaces: `TaskRepository` and `DraftRepository`, which define the business contract for task CRUD actions and draft handling, utilizing Kotlin Coroutines Flow.
 
 ## Proposed Changes
 
-I will create the following package structure under `app/src/main/java/com/example/actividad_finalandroid/`. To ensure the directories are recognized by the IDE and version control, I will include a placeholder file or a package-level declaration in each.
+### Domain Layer - Repositories
 
-### Package Structure
+#### [NEW] [TaskRepository.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/repository/TaskRepository.kt)
+Define an interface for Task operations:
+- `getTasks(ownerId: String): Flow<List<Task>>`
+- `getTaskById(id: String): Flow<Task?>`
+- `insertTask(task: Task): Result<Unit>`
+- `updateTask(task: Task): Result<Unit>`
+- `deleteTask(id: String): Result<Unit>`
 
-- **`di/`**: Dependency Injection configuration.
-- **`navigation/`**: Navigation graphs and routes.
-- **`data/`**: Data layer.
-    - `local/`: Local data sources (e.g., Room).
-    - `remote/`: Remote data sources (e.g., Retrofit).
-    - `repository/`: Repository implementations.
-- **`domain/`**: Domain layer.
-    - `model/`: Domain entities.
-    - `repository/`: Repository interfaces.
-    - `usecase/`: Business logic use cases.
-- **`ui/`**: Presentation layer.
-    - `screen/`: Main UI screens (Composables).
-    - `component/`: Reusable UI components.
-    - `state/`: UI state and ViewModels.
+#### [NEW] [DraftRepository.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/repository/DraftRepository.kt)
+Define an interface for local draft operations:
+- `getDrafts(ownerId: String): Flow<List<TaskDraftEntity>>`
+- `saveDraft(draft: TaskDraftEntity): Long`
+- `deleteDraft(id: Int): Unit`
 
 ## Verification Plan
 
-### Manual Verification
-- I will list the files in the project to verify the directory structure has been created correctly.
-- I will ensure the project still builds successfully.
+### Automated Tests
+- Build and verify compilation via `app:assembleDebug`.

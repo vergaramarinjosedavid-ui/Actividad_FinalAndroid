@@ -1,2 +1,5 @@
 - [x] Create base MVVM package structure
 - [x] Create domain/model/Task.kt data class
+- [x] Add Room dependencies
+- [x] Create data/local/entity/TaskDraftEntity.kt
+- [x] Create domain/repository interfaces

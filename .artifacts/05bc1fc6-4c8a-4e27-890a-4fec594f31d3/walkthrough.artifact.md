@@ -1,29 +1,13 @@
-# Walkthrough - Architecture Packages & Task Model
+# Walkthrough - Create Domain Repository Interfaces
 
-I have created the requested MVVM package architecture and the `Task` data model with the specified default fields.
+I have successfully created the domain repository interfaces defining the contractual behavior for data operations according to clean architecture guidelines.
 
 ## Changes Made
 
-### Package Infrastructure
-Created the base package directories under `com.example.actividad_finalandroid` along with placeholders:
-- `data/local/`
-- `data/remote/`
-- `data/repository/`
-- `domain/model/`
-- `domain/repository/`
-- `domain/usecase/`
-- `ui/screen/`
-- `ui/component/`
-- `ui/state/`
-- `di/`
-- `navigation/`
-
-### Domain Layer
-- Created [Task.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/model/Task.kt) data class containing all requested fields required by Firestore.
-
-### Build Configuration
-- Updated `compileSdk` to version `37` in `app/build.gradle.kts` to resolve dependency version constraints and ensure a successful project build.
+### Domain Layer - Repositories
+- **`domain/repository/TaskRepository.kt`**: Added the `TaskRepository` interface defining core CRUD operations with asynchronous support via coroutines and stream data via Kotlin `Flow`.
+- **`domain/repository/DraftRepository.kt`**: Added the `DraftRepository` interface specifying methods to get, save, and delete local task drafts (`TaskDraftEntity`).
 
 ## Validation Results
 
-- **Build output**: Successful compilation of the project.
+- **Build status**: `app:assembleDebug` completed successfully with no compilation errors.
