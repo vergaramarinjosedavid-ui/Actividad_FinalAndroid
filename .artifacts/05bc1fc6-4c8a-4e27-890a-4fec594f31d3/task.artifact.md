@@ -3,3 +3,5 @@
 - [x] Add Room dependencies
 - [x] Create data/local/entity/TaskDraftEntity.kt
 - [x] Create domain/repository interfaces
+- [x] Create AuthRepository interface and AuthRepositoryImpl
+- [x] Create individual Authentication Use Cases

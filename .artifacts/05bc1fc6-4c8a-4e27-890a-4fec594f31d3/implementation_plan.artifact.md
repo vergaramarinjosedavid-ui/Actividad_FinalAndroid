@@ -1,26 +1,24 @@
-# Implementation Plan - Domain Repository Interfaces
+# Implementation Plan - Authentication Use Cases
 
-This plan details the creation of the two domain repository interfaces: `TaskRepository` and `DraftRepository`, which define the business contract for task CRUD actions and draft handling, utilizing Kotlin Coroutines Flow.
+This plan details the creation of four independent authentication use cases under the `domain/usecase/auth/` package. Each use case will encapsulate a single business rule, injecting `AuthRepository` and providing an `operator fun invoke` for a clean architecture delivery.
 
 ## Proposed Changes
 
-### Domain Layer - Repositories
+### Domain Layer - Use Cases
 
-#### [NEW] [TaskRepository.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/repository/TaskRepository.kt)
-Define an interface for Task operations:
-- `getTasks(ownerId: String): Flow<List<Task>>`
-- `getTaskById(id: String): Flow<Task?>`
-- `insertTask(task: Task): Result<Unit>`
-- `updateTask(task: Task): Result<Unit>`
-- `deleteTask(id: String): Result<Unit>`
+#### [NEW] [RegisterUserUseCase.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/usecase/auth/RegisterUserUseCase.kt)
+- Contains an `invoke(email: String, password: String): Result<Unit>` method calling `authRepository.signUp`.
 
-#### [NEW] [DraftRepository.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/repository/DraftRepository.kt)
-Define an interface for local draft operations:
-- `getDrafts(ownerId: String): Flow<List<TaskDraftEntity>>`
-- `saveDraft(draft: TaskDraftEntity): Long`
-- `deleteDraft(id: Int): Unit`
+#### [NEW] [LoginUserUseCase.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/usecase/auth/LoginUserUseCase.kt)
+- Contains an `invoke(email: String, password: String): Result<Unit>` method calling `authRepository.signIn`.
+
+#### [NEW] [LogoutUserUseCase.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/usecase/auth/LogoutUserUseCase.kt)
+- Contains an `invoke(): Unit` method calling `authRepository.signOut`.
+
+#### [NEW] [GetCurrentUserUseCase.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/usecase/auth/GetCurrentUserUseCase.kt)
+- Contains an `invoke(): String?` method calling `authRepository.getCurrentUserUid`.
 
 ## Verification Plan
 
-### Automated Tests
-- Build and verify compilation via `app:assembleDebug`.
+### Manual Verification
+- Code analysis and syntax checking via the IDE.
