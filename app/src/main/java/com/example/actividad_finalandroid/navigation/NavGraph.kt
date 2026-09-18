@@ -10,11 +10,16 @@ import com.example.actividad_finalandroid.domain.usecase.auth.GetCurrentUserUseC
 import com.example.actividad_finalandroid.domain.usecase.auth.LoginUserUseCase
 import com.example.actividad_finalandroid.domain.usecase.auth.LogoutUserUseCase
 import com.example.actividad_finalandroid.domain.usecase.auth.RegisterUserUseCase
-import com.example.actividad_finalandroid.ui.screen.HomeScreen
+import com.example.actividad_finalandroid.domain.usecase.task.CreateTaskUseCase
+import com.example.actividad_finalandroid.domain.usecase.task.DeleteTaskUseCase
+import com.example.actividad_finalandroid.domain.usecase.task.GetTasksUseCase
+import com.example.actividad_finalandroid.domain.usecase.task.UpdateTaskUseCase
 import com.example.actividad_finalandroid.ui.screen.LoginScreen
 import com.example.actividad_finalandroid.ui.screen.RegisterScreen
+import com.example.actividad_finalandroid.ui.screen.TaskScreen
 import com.example.actividad_finalandroid.ui.state.LoginViewModel
 import com.example.actividad_finalandroid.ui.state.RegisterViewModel
+import com.example.actividad_finalandroid.ui.state.TaskViewModel
 
 @Composable
 fun NavGraph(
@@ -22,6 +27,10 @@ fun NavGraph(
     loginUserUseCase: LoginUserUseCase,
     logoutUserUseCase: LogoutUserUseCase,
     getCurrentUserUseCase: GetCurrentUserUseCase,
+    createTaskUseCase: CreateTaskUseCase,
+    getTasksUseCase: GetTasksUseCase,
+    updateTaskUseCase: UpdateTaskUseCase,
+    deleteTaskUseCase: DeleteTaskUseCase,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
@@ -68,9 +77,19 @@ fun NavGraph(
         }
 
         composable(Screen.Home.route) {
-            HomeScreen(
-                logoutUserUseCase = logoutUserUseCase,
-                onLogoutSuccess = {
+            val taskViewModel = androidx.compose.runtime.remember {
+                TaskViewModel(
+                    createTaskUseCase = createTaskUseCase,
+                    getTasksUseCase = getTasksUseCase,
+                    updateTaskUseCase = updateTaskUseCase,
+                    deleteTaskUseCase = deleteTaskUseCase,
+                    getCurrentUserUseCase = getCurrentUserUseCase
+                )
+            }
+            TaskScreen(
+                viewModel = taskViewModel,
+                onLogoutClick = {
+                    logoutUserUseCase()
                     navController.navigate(Screen.Login.route) {
                         popUpTo(Screen.Home.route) { inclusive = true }
                         launchSingleTop = true

@@ -11,3 +11,4 @@
 - [x] Implement Secure Navigation Graph and automatic redirection
 - [x] Implement Firestore TaskRepositoryImpl
 - [x] Create individual Task Use Cases (Create, Get, Update, Delete)
+- [x] Create Task MVVM components (State, ViewModel, Screen) and update NavGraph

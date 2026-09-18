@@ -12,10 +12,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.actividad_finalandroid.data.repository.AuthRepositoryImpl
+import com.example.actividad_finalandroid.data.repository.TaskRepositoryImpl
 import com.example.actividad_finalandroid.domain.usecase.auth.GetCurrentUserUseCase
 import com.example.actividad_finalandroid.domain.usecase.auth.LoginUserUseCase
 import com.example.actividad_finalandroid.domain.usecase.auth.LogoutUserUseCase
 import com.example.actividad_finalandroid.domain.usecase.auth.RegisterUserUseCase
+import com.example.actividad_finalandroid.domain.usecase.task.CreateTaskUseCase
+import com.example.actividad_finalandroid.domain.usecase.task.DeleteTaskUseCase
+import com.example.actividad_finalandroid.domain.usecase.task.GetTasksUseCase
+import com.example.actividad_finalandroid.domain.usecase.task.UpdateTaskUseCase
 import com.example.actividad_finalandroid.navigation.NavGraph
 import com.example.actividad_finalandroid.ui.theme.Actividad_FinalAndroidTheme
 
@@ -30,6 +35,12 @@ class MainActivity : ComponentActivity() {
         val logoutUserUseCase = LogoutUserUseCase(authRepository)
         val getCurrentUserUseCase = GetCurrentUserUseCase(authRepository)
 
+        val taskRepository = TaskRepositoryImpl()
+        val createTaskUseCase = CreateTaskUseCase(taskRepository)
+        val getTasksUseCase = GetTasksUseCase(taskRepository)
+        val updateTaskUseCase = UpdateTaskUseCase(taskRepository)
+        val deleteTaskUseCase = DeleteTaskUseCase(taskRepository)
+
         enableEdgeToEdge()
         setContent {
             Actividad_FinalAndroidTheme {
@@ -39,6 +50,10 @@ class MainActivity : ComponentActivity() {
                         loginUserUseCase = loginUserUseCase,
                         logoutUserUseCase = logoutUserUseCase,
                         getCurrentUserUseCase = getCurrentUserUseCase,
+                        createTaskUseCase = createTaskUseCase,
+                        getTasksUseCase = getTasksUseCase,
+                        updateTaskUseCase = updateTaskUseCase,
+                        deleteTaskUseCase = deleteTaskUseCase,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
