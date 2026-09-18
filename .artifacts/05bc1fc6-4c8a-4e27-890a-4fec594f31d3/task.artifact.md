@@ -9,3 +9,5 @@
 - [x] Add Navigation Compose dependencies
 - [x] Create Login MVVM components (State, ViewModel, Screen)
 - [x] Implement Secure Navigation Graph and automatic redirection
+- [x] Implement Firestore TaskRepositoryImpl
+- [x] Create individual Task Use Cases (Create, Get, Update, Delete)
