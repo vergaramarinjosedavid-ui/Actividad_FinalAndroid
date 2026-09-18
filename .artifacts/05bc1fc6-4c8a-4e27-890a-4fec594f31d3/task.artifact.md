@@ -5,3 +5,7 @@
 - [x] Create domain/repository interfaces
 - [x] Create AuthRepository interface and AuthRepositoryImpl
 - [x] Create individual Authentication Use Cases
+- [x] Create Register MVVM components (State, ViewModel, Screen)
+- [x] Add Navigation Compose dependencies
+- [x] Create Login MVVM components (State, ViewModel, Screen)
+- [x] Implement Secure Navigation Graph and automatic redirection

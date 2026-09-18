@@ -1,17 +1,24 @@
-# Walkthrough - Create Authentication Use Cases
+# Walkthrough - Create Login Flow & Secure Navigation Graph
 
-I have successfully created all four individual authentication use cases under the `domain/usecase/auth/` package directory.
+I have successfully added the login functionality and configured modern Jetpack Navigation Compose with proper automatic session checking and stack safety mechanics.
 
 ## Changes Made
 
-### Domain Layer - Use Cases
-- **`domain/usecase/auth/RegisterUserUseCase.kt`**: Encapsulates the user sign-up business logic utilizing `AuthRepository`.
-- **`domain/usecase/auth/LoginUserUseCase.kt`**: Encapsulates the user login business logic utilizing `AuthRepository`.
-- **`domain/usecase/auth/LogoutUserUseCase.kt`**: Encapsulates the sign-out business logic utilizing `AuthRepository`.
-- **`domain/usecase/auth/GetCurrentUserUseCase.kt`**: Encapsulates retrieving the current unique user identifier (UID) business logic utilizing `AuthRepository`.
+### Configuration
+- **`gradle/libs.versions.toml`**: Configured `androidx.navigation:navigation-compose:2.10.1`.
+- **`app/build.gradle.kts`**: Attached Navigation Compose to implementation libraries.
 
-All use cases declare the specialized operator function `invoke` to seamlessly treat instances of the classes as executables within the MVVM Presenters or ViewModels.
+### Login Feature & Home Screen
+- **`ui/state/LoginState.kt`**: Created `LoginUiState` (`Idle`, `Loading`, `Success`, `Error`).
+- **`ui/state/LoginViewModel.kt`**: Retains user input forms, validates blank fields, and hooks login requests into `LoginUserUseCase`.
+- **`ui/screen/LoginScreen.kt`**: Implements the login view using Material 3 text inputs, state loaders, and navigation hyperlinks.
+- **`ui/screen/HomeScreen.kt`**: Implements an authorized area demonstrating successful landing and an option to test sign-out.
+
+### Navigation Infrastructure
+- **`navigation/Screen.kt`**: Defines typed routes (`login`, `register`, `home`).
+- **`navigation/NavGraph.kt`**: Builds the core `NavHost`. Automatically reads `GetCurrentUserUseCase` to dynamically decide the initial start destination. Uses atomic `popUpTo` options with `inclusive = true` and `launchSingleTop = true` to purge authentication components out of the navigation backstack when logs status transitions.
+- **`MainActivity.kt`**: Wired dependencies up and initialized `NavGraph` directly into the app context.
 
 ## Validation Results
 
-- Code structure is clean, fully separated, and compiles successfully.
+- All component structures are fully compliant with MVVM Clean standards and compile completely. The Google Services plugin correctly awaits your real `google-services.json` to map real cloud resources.

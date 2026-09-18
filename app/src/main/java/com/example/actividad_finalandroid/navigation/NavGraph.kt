@@ -1,0 +1,82 @@
+package com.example.actividad_finalandroid.navigation
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.actividad_finalandroid.domain.usecase.auth.GetCurrentUserUseCase
+import com.example.actividad_finalandroid.domain.usecase.auth.LoginUserUseCase
+import com.example.actividad_finalandroid.domain.usecase.auth.LogoutUserUseCase
+import com.example.actividad_finalandroid.domain.usecase.auth.RegisterUserUseCase
+import com.example.actividad_finalandroid.ui.screen.HomeScreen
+import com.example.actividad_finalandroid.ui.screen.LoginScreen
+import com.example.actividad_finalandroid.ui.screen.RegisterScreen
+import com.example.actividad_finalandroid.ui.state.LoginViewModel
+import com.example.actividad_finalandroid.ui.state.RegisterViewModel
+
+@Composable
+fun NavGraph(
+    registerUserUseCase: RegisterUserUseCase,
+    loginUserUseCase: LoginUserUseCase,
+    logoutUserUseCase: LogoutUserUseCase,
+    getCurrentUserUseCase: GetCurrentUserUseCase,
+    modifier: Modifier = Modifier,
+    navController: NavHostController = rememberNavController()
+) {
+    // Automatic redirection check
+    val isUserLoggedIn = getCurrentUserUseCase() != null
+    val startDestination = if (isUserLoggedIn) Screen.Home.route else Screen.Login.route
+
+    NavHost(
+        navController = navController,
+        startDestination = startDestination,
+        modifier = modifier
+    ) {
+        composable(Screen.Login.route) {
+            val loginViewModel = androidx.compose.runtime.remember {
+                LoginViewModel(loginUserUseCase, getCurrentUserUseCase)
+            }
+            LoginScreen(
+                viewModel = loginViewModel,
+                onLoginSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                onNavigateToRegister = {
+                    navController.navigate(Screen.Register.route)
+                }
+            )
+        }
+
+        composable(Screen.Register.route) {
+            val registerViewModel = androidx.compose.runtime.remember {
+                RegisterViewModel(registerUserUseCase)
+            }
+            RegisterScreen(
+                viewModel = registerViewModel,
+                onRegistrationSuccess = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Login.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+
+        composable(Screen.Home.route) {
+            HomeScreen(
+                logoutUserUseCase = logoutUserUseCase,
+                onLogoutSuccess = {
+                    navController.navigate(Screen.Login.route) {
+                        popUpTo(Screen.Home.route) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            )
+        }
+    }
+}

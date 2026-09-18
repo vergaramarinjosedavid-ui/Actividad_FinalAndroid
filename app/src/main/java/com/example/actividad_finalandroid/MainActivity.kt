@@ -11,37 +11,38 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.actividad_finalandroid.data.repository.AuthRepositoryImpl
+import com.example.actividad_finalandroid.domain.usecase.auth.GetCurrentUserUseCase
+import com.example.actividad_finalandroid.domain.usecase.auth.LoginUserUseCase
+import com.example.actividad_finalandroid.domain.usecase.auth.LogoutUserUseCase
+import com.example.actividad_finalandroid.domain.usecase.auth.RegisterUserUseCase
+import com.example.actividad_finalandroid.navigation.NavGraph
 import com.example.actividad_finalandroid.ui.theme.Actividad_FinalAndroidTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Manual dependency injection for setup demonstration
+        val authRepository = AuthRepositoryImpl()
+        val registerUserUseCase = RegisterUserUseCase(authRepository)
+        val loginUserUseCase = LoginUserUseCase(authRepository)
+        val logoutUserUseCase = LogoutUserUseCase(authRepository)
+        val getCurrentUserUseCase = GetCurrentUserUseCase(authRepository)
+
         enableEdgeToEdge()
         setContent {
             Actividad_FinalAndroidTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
+                    NavGraph(
+                        registerUserUseCase = registerUserUseCase,
+                        loginUserUseCase = loginUserUseCase,
+                        logoutUserUseCase = logoutUserUseCase,
+                        getCurrentUserUseCase = getCurrentUserUseCase,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
             }
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Actividad_FinalAndroidTheme {
-        Greeting("Android")
     }
 }
