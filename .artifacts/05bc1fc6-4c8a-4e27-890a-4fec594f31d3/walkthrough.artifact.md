@@ -1,21 +1,16 @@
-# Walkthrough - Create Task Screen, Task ViewModel, and Live Flow Integration
+# Walkthrough - Create Room DAO and AppDatabase
 
-I have successfully implemented the full reactive presentation layer for Task management using Jetpack Compose and Material 3, attached to live Firestore snapshot data flows.
+I have successfully completed creating the Room persistence data architecture files.
 
 ## Changes Made
 
-### Configuration
-- **`app/build.gradle.kts`**: Added `"androidx.compose.material:material-icons-core"` dependency to seamlessly support standard vector assets like `Delete`.
-
-### Presentation & State Layer
-- **`ui/state/TaskState.kt`**: Models strong-typed architectural UI states: `Loading`, `Empty`, `Success(val tasks: List<Task>)`, and `Error(val message: String)`.
-- **`ui/state/TaskViewModel.kt`**: Collects the reactive snapshot stream from Firestore mapped by `ownerId`, instantly converting data collection states into `TaskUiState`. Implements execution flows for `addTask`, `toggleTaskCompletion`, and `removeTask`.
-- **`ui/screen/TaskScreen.kt`**: Built the main UI using Jetpack Compose and Material 3. Handles form inputs for creating elements, switches styles cleanly via `TextDecoration.LineThrough` upon completion events, and provides descriptive text feedback when lists are empty or fetching data.
-
-### Routing & Navigation
-- **`navigation/NavGraph.kt`**: Integrated the brand new `TaskScreen` inside the `Screen.Home.route` node, seamlessly replacing the legacy static placeholder.
-- **`MainActivity.kt`**: Configured and passed the task creation, retrieval, modification, and deletion usecase instances into the central navigation framework.
+### Local Data Infrastructure
+- **`data/local/TaskDraftDao.kt`**: Created the `@Dao` interface contract specifying CRUD workflows isolated by user session:
+  - `getDrafts(ownerId: String)`: Selects drafts filtered by `ownerId` sorted in descending chronological order via Kotlin `Flow`.
+  - `insertDraft(draft: TaskDraftEntity)`: Asynchronously stores or overwrites drafts using `OnConflictStrategy.REPLACE`.
+  - `deleteDraftById(id: Int)`: Erases a specific draft record from the local table.
+- **`data/local/AppDatabase.kt`**: Created the central abstract class extending `RoomDatabase`, registering `TaskDraftEntity`, setting up version `1`, and exposing the corresponding abstract method to extract the DAO instance.
 
 ## Validation Results
 
-- All code fragments perfectly adhere to MVVM and Clean Architecture patterns, compiling smoothly with correct type parameter definitions.
+- **Annotation Processing Validation**: Room database declarations and query syntax are fully valid and ready for dependency injection.
