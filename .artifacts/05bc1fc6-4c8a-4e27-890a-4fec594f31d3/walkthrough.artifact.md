@@ -1,16 +1,20 @@
-# Walkthrough - Create Room DAO and AppDatabase
+# Walkthrough - Draft Repository & Publish Logic
 
-I have successfully completed creating the Room persistence data architecture files.
+I have successfully implemented the local draft persistence repository and its business logic use cases, including a secure publishing mechanism.
 
 ## Changes Made
 
-### Local Data Infrastructure
-- **`data/local/TaskDraftDao.kt`**: Created the `@Dao` interface contract specifying CRUD workflows isolated by user session:
-  - `getDrafts(ownerId: String)`: Selects drafts filtered by `ownerId` sorted in descending chronological order via Kotlin `Flow`.
-  - `insertDraft(draft: TaskDraftEntity)`: Asynchronously stores or overwrites drafts using `OnConflictStrategy.REPLACE`.
-  - `deleteDraftById(id: Int)`: Erases a specific draft record from the local table.
-- **`data/local/AppDatabase.kt`**: Created the central abstract class extending `RoomDatabase`, registering `TaskDraftEntity`, setting up version `1`, and exposing the corresponding abstract method to extract the DAO instance.
+### Data Layer
+- **`data/repository/DraftRepositoryImpl.kt`**: Implemented `DraftRepository` interface, acting as an abstraction over the `TaskDraftDao`.
+
+### Domain Layer
+- **`domain/usecase/draft/`**: Created four specialized use cases for draft management:
+    - `GetDraftsUseCase`: Retrieves the reactive flow of local drafts.
+    - `SaveDraftUseCase`: Persists a draft to Room.
+    - `DeleteDraftUseCase`: Removes a draft from local storage.
+    - `PublishDraftUseCase`: Implements the secure transaction logic. It attempts to create the task in Firestore via `TaskRepository` and, only upon a successful result, proceeds to delete the corresponding local draft.
 
 ## Validation Results
 
-- **Annotation Processing Validation**: Room database declarations and query syntax are fully valid and ready for dependency injection.
+- **Build output**: Successful compilation of all components.
+- **Architectural Integrity**: Clean separation of concerns between local storage (Room) and remote synchronization (Firestore) mediated by the domain layer.
