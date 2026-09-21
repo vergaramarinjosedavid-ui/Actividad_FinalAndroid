@@ -5,6 +5,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.example.actividad_finalandroid.data.local.entity.TaskDraftEntity
 import com.example.actividad_finalandroid.domain.model.Task
 import com.example.actividad_finalandroid.ui.state.TaskUiState
 import com.example.actividad_finalandroid.ui.state.TaskViewModel
@@ -24,8 +27,106 @@ fun TaskScreen(
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.taskUiState.collectAsState()
+    val pendingDrafts by viewModel.pendingDraftsState.collectAsState()
+    val isSyncing by viewModel.isSyncing.collectAsState()
+    val syncMessage by viewModel.syncMessage.collectAsState()
+
     var newTitle by remember { mutableStateOf("") }
     var newDescription by remember { mutableStateOf("") }
+
+    var showDeleteDialog by remember { mutableStateOf(false) }
+    var taskToDeleteId by remember { mutableStateOf<String?>(null) }
+
+    var showEditDialog by remember { mutableStateOf(false) }
+    var taskToEdit by remember { mutableStateOf<Task?>(null) }
+    var editTitle by remember { mutableStateOf("") }
+    var editDescription by remember { mutableStateOf("") }
+
+    if (showDeleteDialog) {
+        AlertDialog(
+            onDismissRequest = {
+                showDeleteDialog = false
+                taskToDeleteId = null
+            },
+            title = { Text("Confirmar eliminación") },
+            text = { Text("¿Estás seguro de que deseas eliminar esta tarea? Esta acción no se puede deshacer.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        taskToDeleteId?.let { viewModel.removeTask(it) }
+                        showDeleteDialog = false
+                        taskToDeleteId = null
+                    }
+                ) {
+                    Text("Eliminar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showDeleteDialog = false
+                        taskToDeleteId = null
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
+
+    if (showEditDialog && taskToEdit != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showEditDialog = false
+                taskToEdit = null
+            },
+            title = { Text("Editar Tarea") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = editTitle,
+                        onValueChange = { editTitle = it },
+                        label = { Text("Título") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = editDescription,
+                        onValueChange = { editDescription = it },
+                        label = { Text("Descripción") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        taskToEdit?.let { task ->
+                            if (editTitle.isNotBlank()) {
+                                viewModel.updateTaskDetails(task, editTitle, editDescription)
+                            }
+                        }
+                        showEditDialog = false
+                        taskToEdit = null
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showEditDialog = false
+                        taskToEdit = null
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = modifier
@@ -56,7 +157,31 @@ fun TaskScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Sync Message Banner
+        syncMessage?.let { message ->
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.padding(12.dp).fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = message,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.weight(1f)
+                    )
+                    TextButton(onClick = { viewModel.clearSyncMessage() }) {
+                        Text("OK")
+                    }
+                }
+            }
+        }
 
         // Create Task Section
         Card(
@@ -65,7 +190,7 @@ fun TaskScreen(
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
                 Text(
-                    text = "Nueva Tarea",
+                    text = "Nueva Tarea Local",
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
@@ -85,64 +210,202 @@ fun TaskScreen(
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = {
-                        if (newTitle.isNotBlank()) {
-                            viewModel.addTask(newTitle, newDescription)
-                            newTitle = ""
-                            newDescription = ""
-                        }
-                    },
-                    modifier = Modifier.align(Alignment.End)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Agregar")
+                    Text(
+                        text = "Las tareas se guardan localmente hasta subirlas",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Button(
+                        onClick = {
+                            if (newTitle.isNotBlank()) {
+                                viewModel.addTask(newTitle, newDescription)
+                                newTitle = ""
+                                newDescription = ""
+                            }
+                        }
+                    ) {
+                        Text("Guardar Local")
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // UI States handling
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+        // Prominent "Subir a Firebase" Button
+        ElevatedButton(
+            onClick = { viewModel.uploadAllToFirebase() },
+            enabled = !isSyncing && pendingDrafts.isNotEmpty(),
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.elevatedButtonColors(
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary
+            )
         ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                if (isSyncing) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        strokeWidth = 2.dp
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Subiendo a Firebase...")
+                } else {
+                    Icon(
+                        imageVector = Icons.Default.Share,
+                        contentDescription = "Subir a Firebase",
+                        tint = MaterialTheme.colorScheme.onPrimary
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        if (pendingDrafts.isEmpty()) "Sin tareas pendientes por subir a Firebase"
+                        else "Subir a Firebase (${pendingDrafts.size} pendientes)"
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Lists section (Pending Local Drafts & Cloud Tasks)
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.fillMaxSize()
+        ) {
+            // Section 1: Pending Local Tasks
+            if (pendingDrafts.isNotEmpty()) {
+                item {
+                    Text(
+                        text = "Pendientes por subir a Firebase (${pendingDrafts.size})",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(vertical = 4.dp)
+                    )
+                }
+                items(pendingDrafts, key = { "draft_${it.id}" }) { draft ->
+                    PendingTaskItem(
+                        draft = draft,
+                        onUploadClick = { viewModel.uploadSingleDraftToFirebase(draft) }
+                    )
+                }
+            }
+
+            // Section 2: Cloud Tasks (Firebase Firestore)
+            item {
+                Text(
+                    text = "Tareas Sincronizadas en Firebase",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 8.dp, bottom = 4.dp)
+                )
+            }
+
             when (val state = uiState) {
                 is TaskUiState.Loading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
-                is TaskUiState.Empty -> {
-                    Text(
-                        text = "No tienes tareas registradas. ¡Empieza creando una!",
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center).padding(24.dp)
-                    )
-                }
-                is TaskUiState.Error -> {
-                    Text(
-                        text = state.message,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyLarge,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.align(Alignment.Center).padding(24.dp)
-                    )
-                }
-                is TaskUiState.Success -> {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxSize()
-                    ) {
-                        items(state.tasks, key = { it.id }) { task ->
-                            TaskItem(
-                                task = task,
-                                onCheckedChange = { viewModel.toggleTaskCompletion(task) },
-                                onDeleteClick = { viewModel.removeTask(task.id) }
-                            )
+                    item {
+                        Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
                         }
                     }
                 }
+                is TaskUiState.Empty -> {
+                    item {
+                        Text(
+                            text = "No hay tareas sincronizadas en Firebase.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                        )
+                    }
+                }
+                is TaskUiState.Error -> {
+                    item {
+                        Text(
+                            text = state.message,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                        )
+                    }
+                }
+                is TaskUiState.Success -> {
+                    items(state.tasks, key = { it.id }) { task ->
+                        TaskItem(
+                            task = task,
+                            onCheckedChange = { viewModel.toggleTaskCompletion(task) },
+                            onEditClick = {
+                                taskToEdit = task
+                                editTitle = task.title
+                                editDescription = task.description
+                                showEditDialog = true
+                            },
+                            onDeleteClick = {
+                                taskToDeleteId = task.id
+                                showDeleteDialog = true
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PendingTaskItem(
+    draft: TaskDraftEntity,
+    onUploadClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Badge(containerColor = MaterialTheme.colorScheme.tertiary) {
+                        Text("Pendiente", color = MaterialTheme.colorScheme.onTertiary)
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = draft.title,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+                if (draft.description.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = draft.description,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                }
+            }
+            IconButton(onClick = onUploadClick) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = "Subir a Firebase",
+                    tint = MaterialTheme.colorScheme.primary
+                )
             }
         }
     }
@@ -152,6 +415,7 @@ fun TaskScreen(
 fun TaskItem(
     task: Task,
     onCheckedChange: (Boolean) -> Unit,
+    onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     Card(
@@ -190,12 +454,21 @@ fun TaskItem(
                     }
                 }
             }
-            IconButton(onClick = onDeleteClick) {
-                Icon(
-                    imageVector = Icons.Default.Delete,
-                    contentDescription = "Eliminar Tarea",
-                    tint = MaterialTheme.colorScheme.error
-                )
+            Row {
+                IconButton(onClick = onEditClick) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Editar Tarea",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                IconButton(onClick = onDeleteClick) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Eliminar Tarea",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }

@@ -6,6 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -28,6 +29,65 @@ fun DraftsScreen(
 
     var draftTitle by remember { mutableStateOf("") }
     var draftDescription by remember { mutableStateOf("") }
+
+    var showEditDialog by remember { mutableStateOf(false) }
+    var draftToEdit by remember { mutableStateOf<TaskDraftEntity?>(null) }
+    var editTitle by remember { mutableStateOf("") }
+    var editDescription by remember { mutableStateOf("") }
+
+    if (showEditDialog && draftToEdit != null) {
+        AlertDialog(
+            onDismissRequest = {
+                showEditDialog = false
+                draftToEdit = null
+            },
+            title = { Text("Editar Borrador") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = editTitle,
+                        onValueChange = { editTitle = it },
+                        label = { Text("Título de Borrador") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = editDescription,
+                        onValueChange = { editDescription = it },
+                        label = { Text("Descripción de Borrador") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        draftToEdit?.let { draft ->
+                            if (editTitle.isNotBlank()) {
+                                viewModel.updateDraft(draft, editTitle, editDescription)
+                            }
+                        }
+                        showEditDialog = false
+                        draftToEdit = null
+                    }
+                ) {
+                    Text("Guardar")
+                }
+            },
+            dismissButton = {
+                TextButton(
+                    onClick = {
+                        showEditDialog = false
+                        draftToEdit = null
+                    }
+                ) {
+                    Text("Cancelar")
+                }
+            }
+        )
+    }
 
     Column(
         modifier = modifier
@@ -129,6 +189,21 @@ fun DraftsScreen(
             else -> {}
         }
 
+        if (drafts.isNotEmpty()) {
+            ElevatedButton(
+                onClick = { viewModel.publishAllDrafts() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = "Subir Todo a Firebase"
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Subir Todo a Firebase (${drafts.size})")
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+        }
+
         // List
         if (drafts.isEmpty()) {
             Box(modifier = Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
@@ -146,6 +221,12 @@ fun DraftsScreen(
                 items(drafts, key = { it.id }) { draft ->
                     DraftItem(
                         draft = draft,
+                        onEditClick = {
+                            draftToEdit = draft
+                            editTitle = draft.title
+                            editDescription = draft.description
+                            showEditDialog = true
+                        },
                         onPublishClick = { viewModel.publish(draft) },
                         onDeleteClick = { viewModel.removeDraft(draft.id) }
                     )
@@ -155,11 +236,10 @@ fun DraftsScreen(
     }
 }
 
-
-
 @Composable
 fun DraftItem(
     draft: TaskDraftEntity,
+    onEditClick: () -> Unit,
     onPublishClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
@@ -188,11 +268,18 @@ fun DraftItem(
                 }
             }
             Row {
+                IconButton(onClick = onEditClick) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Editar Borrador",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
                 IconButton(onClick = onPublishClick) {
                     Icon(
                         imageVector = Icons.Default.Share,
                         contentDescription = "Publicar a la nube",
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = MaterialTheme.colorScheme.secondary
                     )
                 }
                 IconButton(onClick = onDeleteClick) {

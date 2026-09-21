@@ -1,8 +1,5 @@
 package com.example.actividad_finalandroid.ui.state
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.actividad_finalandroid.data.local.entity.TaskDraftEntity
@@ -62,6 +59,22 @@ class DraftViewModel(
         }
     }
 
+    fun updateDraft(draft: TaskDraftEntity, title: String, description: String) {
+        if (title.isBlank()) {
+            _actionStatus.value = DraftActionStatus.Error("El título es obligatorio.")
+            return
+        }
+        viewModelScope.launch {
+            val updatedDraft = draft.copy(
+                title = title,
+                description = description,
+                savedAt = System.currentTimeMillis()
+            )
+            saveDraftUseCase(updatedDraft)
+            _actionStatus.value = DraftActionStatus.Success
+        }
+    }
+
     fun removeDraft(id: Int) {
         viewModelScope.launch {
             deleteDraftUseCase(id)
@@ -80,6 +93,20 @@ class DraftViewModel(
                         exception.localizedMessage ?: "Error de red al publicar. Conservando borrador."
                     )
                 }
+        }
+    }
+
+    fun publishAllDrafts() {
+        val list = draftsState.value
+        if (list.isEmpty()) return
+        viewModelScope.launch {
+            _actionStatus.value = DraftActionStatus.Loading
+            var count = 0
+            list.forEach { draft ->
+                val result = publishDraftUseCase(draft)
+                if (result.isSuccess) count++
+            }
+            _actionStatus.value = DraftActionStatus.Success
         }
     }
 

@@ -1,6 +1,4 @@
-- [x] Fix App Crash and Stabilize Build
-    - [x] Update libs.versions.toml (Kotlin 2.0.21, stable dependencies)
-    - [x] Configure gradle.properties (enable AndroidX, Jetifier, disable builtInKotlin)
-    - [x] Update root build.gradle.kts (align plugin versions)
-    - [x] Update app build.gradle.kts (apply KAPT, update Room compiler, adjust minSdk to 26)
-    - [x] Synchronize and Build
+- [x] Add delete confirmation dialog to TaskScreen
+    - [x] Add state for dialog visibility and target task
+    - [x] Implement AlertDialog component
+    - [x] Update delete action triggers

@@ -93,6 +93,9 @@ fun NavGraph(
                     getTasksUseCase = getTasksUseCase,
                     updateTaskUseCase = updateTaskUseCase,
                     deleteTaskUseCase = deleteTaskUseCase,
+                    saveDraftUseCase = saveDraftUseCase,
+                    getDraftsUseCase = getDraftsUseCase,
+                    publishDraftUseCase = publishDraftUseCase,
                     getCurrentUserUseCase = getCurrentUserUseCase
                 )
             }
