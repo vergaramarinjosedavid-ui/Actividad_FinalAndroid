@@ -4,7 +4,8 @@ import com.example.actividad_finalandroid.domain.repository.AuthRepository
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.tasks.await
 
-class AuthRepositoryImpl : AuthRepository {
+class
+AuthRepositoryImpl : AuthRepository {
     private val firebaseAuth: FirebaseAuth get() = FirebaseAuth.getInstance()
 
     override suspend fun signUp(email: String, password: String): Result<Unit> {

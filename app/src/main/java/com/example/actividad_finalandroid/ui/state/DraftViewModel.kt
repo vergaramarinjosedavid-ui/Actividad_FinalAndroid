@@ -43,8 +43,8 @@ class DraftViewModel(
     val actionStatus: StateFlow<DraftActionStatus> = _actionStatus.asStateFlow()
 
     fun saveNewDraft(title: String, description: String) {
-        if (title.isBlank()) {
-            _actionStatus.value = DraftActionStatus.Error("El título es obligatorio.")
+        if (title.isBlank() || description.isBlank()) {
+            _actionStatus.value = DraftActionStatus.Error("Por favor completa ambos campos (título y descripción).")
             return
         }
         viewModelScope.launch {
@@ -60,8 +60,8 @@ class DraftViewModel(
     }
 
     fun updateDraft(draft: TaskDraftEntity, title: String, description: String) {
-        if (title.isBlank()) {
-            _actionStatus.value = DraftActionStatus.Error("El título es obligatorio.")
+        if (title.isBlank() || description.isBlank()) {
+            _actionStatus.value = DraftActionStatus.Error("Por favor completa ambos campos (título y descripción).")
             return
         }
         viewModelScope.launch {

@@ -29,33 +29,52 @@ fun DraftsScreen(
 
     var draftTitle by remember { mutableStateOf("") }
     var draftDescription by remember { mutableStateOf("") }
+    var draftFormError by remember { mutableStateOf<String?>(null) }
 
     var showEditDialog by remember { mutableStateOf(false) }
     var draftToEdit by remember { mutableStateOf<TaskDraftEntity?>(null) }
     var editTitle by remember { mutableStateOf("") }
     var editDescription by remember { mutableStateOf("") }
+    var editDraftFormError by remember { mutableStateOf<String?>(null) }
 
     if (showEditDialog && draftToEdit != null) {
         AlertDialog(
             onDismissRequest = {
                 showEditDialog = false
                 draftToEdit = null
+                editDraftFormError = null
             },
             title = { Text("Editar Borrador") },
             text = {
                 Column {
+                    if (editDraftFormError != null) {
+                        Text(
+                            text = editDraftFormError!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
                     OutlinedTextField(
                         value = editTitle,
-                        onValueChange = { editTitle = it },
-                        label = { Text("Título de Borrador") },
+                        onValueChange = {
+                            editTitle = it
+                            editDraftFormError = null
+                        },
+                        label = { Text("Título de Borrador *") },
+                        isError = editDraftFormError != null && editTitle.isBlank(),
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = editDescription,
-                        onValueChange = { editDescription = it },
-                        label = { Text("Descripción de Borrador") },
+                        onValueChange = {
+                            editDescription = it
+                            editDraftFormError = null
+                        },
+                        label = { Text("Descripción de Borrador *") },
+                        isError = editDraftFormError != null && editDescription.isBlank(),
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -65,12 +84,15 @@ fun DraftsScreen(
                 TextButton(
                     onClick = {
                         draftToEdit?.let { draft ->
-                            if (editTitle.isNotBlank()) {
+                            if (editTitle.isBlank() || editDescription.isBlank()) {
+                                editDraftFormError = "Debes completar tanto el título como la descripción."
+                            } else {
                                 viewModel.updateDraft(draft, editTitle, editDescription)
+                                showEditDialog = false
+                                draftToEdit = null
+                                editDraftFormError = null
                             }
                         }
-                        showEditDialog = false
-                        draftToEdit = null
                     }
                 ) {
                     Text("Guardar")
@@ -81,6 +103,7 @@ fun DraftsScreen(
                     onClick = {
                         showEditDialog = false
                         draftToEdit = null
+                        editDraftFormError = null
                     }
                 ) {
                     Text("Cancelar")
@@ -125,33 +148,63 @@ fun DraftsScreen(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
+                if (draftFormError != null) {
+                    Text(
+                        text = draftFormError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 OutlinedTextField(
                     value = draftTitle,
-                    onValueChange = { draftTitle = it },
-                    label = { Text("Título de Borrador") },
+                    onValueChange = {
+                        draftTitle = it
+                        draftFormError = null
+                    },
+                    label = { Text("Título de Borrador *") },
+                    isError = draftFormError != null && draftTitle.isBlank(),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = draftDescription,
-                    onValueChange = { draftDescription = it },
-                    label = { Text("Descripción de Borrador") },
+                    onValueChange = {
+                        draftDescription = it
+                        draftFormError = null
+                    },
+                    label = { Text("Descripción de Borrador *") },
+                    isError = draftFormError != null && draftDescription.isBlank(),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(12.dp))
-                Button(
-                    onClick = {
-                        if (draftTitle.isNotBlank()) {
-                            viewModel.saveNewDraft(draftTitle, draftDescription)
-                            draftTitle = ""
-                            draftDescription = ""
-                        }
-                    },
-                    modifier = Modifier.align(Alignment.End)
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("Guardar Local")
+                    Text(
+                        text = "Ambos campos son obligatorios",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Button(
+                        onClick = {
+                            if (draftTitle.isBlank() || draftDescription.isBlank()) {
+                                draftFormError = "Debes completar tanto el título como la descripción."
+                            } else {
+                                viewModel.saveNewDraft(draftTitle, draftDescription)
+                                draftTitle = ""
+                                draftDescription = ""
+                                draftFormError = null
+                            }
+                        }
+                    ) {
+                        Text("Guardar Local")
+                    }
                 }
             }
         }
@@ -225,6 +278,7 @@ fun DraftsScreen(
                             draftToEdit = draft
                             editTitle = draft.title
                             editDescription = draft.description
+                            editDraftFormError = null
                             showEditDialog = true
                         },
                         onPublishClick = { viewModel.publish(draft) },

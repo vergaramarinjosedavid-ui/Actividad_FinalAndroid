@@ -61,7 +61,10 @@ class TaskViewModel(
     val syncMessage: StateFlow<String?> = _syncMessage.asStateFlow()
 
     fun addTask(title: String, description: String) {
-        if (title.isBlank()) return
+        if (title.isBlank() || description.isBlank()) {
+            _syncMessage.value = "Por favor completa ambos campos (título y descripción)."
+            return
+        }
         viewModelScope.launch {
             val draft = TaskDraftEntity(
                 ownerId = ownerId,
@@ -115,7 +118,10 @@ class TaskViewModel(
     }
 
     fun updateTaskDetails(task: Task, title: String, description: String) {
-        if (title.isBlank()) return
+        if (title.isBlank() || description.isBlank()) {
+            _syncMessage.value = "Por favor completa ambos campos (título y descripción)."
+            return
+        }
         viewModelScope.launch {
             val updatedTask = task.copy(
                 title = title,

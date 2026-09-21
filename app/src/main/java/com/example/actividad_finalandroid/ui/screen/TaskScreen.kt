@@ -33,6 +33,7 @@ fun TaskScreen(
 
     var newTitle by remember { mutableStateOf("") }
     var newDescription by remember { mutableStateOf("") }
+    var formError by remember { mutableStateOf<String?>(null) }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var taskToDeleteId by remember { mutableStateOf<String?>(null) }
@@ -41,6 +42,7 @@ fun TaskScreen(
     var taskToEdit by remember { mutableStateOf<Task?>(null) }
     var editTitle by remember { mutableStateOf("") }
     var editDescription by remember { mutableStateOf("") }
+    var editFormError by remember { mutableStateOf<String?>(null) }
 
     if (showDeleteDialog) {
         AlertDialog(
@@ -79,22 +81,39 @@ fun TaskScreen(
             onDismissRequest = {
                 showEditDialog = false
                 taskToEdit = null
+                editFormError = null
             },
             title = { Text("Editar Tarea") },
             text = {
                 Column {
+                    if (editFormError != null) {
+                        Text(
+                            text = editFormError!!,
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(bottom = 8.dp)
+                        )
+                    }
                     OutlinedTextField(
                         value = editTitle,
-                        onValueChange = { editTitle = it },
-                        label = { Text("Título") },
+                        onValueChange = {
+                            editTitle = it
+                            editFormError = null
+                        },
+                        label = { Text("Título *") },
+                        isError = editFormError != null && editTitle.isBlank(),
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedTextField(
                         value = editDescription,
-                        onValueChange = { editDescription = it },
-                        label = { Text("Descripción") },
+                        onValueChange = {
+                            editDescription = it
+                            editFormError = null
+                        },
+                        label = { Text("Descripción *") },
+                        isError = editFormError != null && editDescription.isBlank(),
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true
                     )
@@ -104,12 +123,15 @@ fun TaskScreen(
                 TextButton(
                     onClick = {
                         taskToEdit?.let { task ->
-                            if (editTitle.isNotBlank()) {
+                            if (editTitle.isBlank() || editDescription.isBlank()) {
+                                editFormError = "Debes completar tanto el título como la descripción."
+                            } else {
                                 viewModel.updateTaskDetails(task, editTitle, editDescription)
+                                showEditDialog = false
+                                taskToEdit = null
+                                editFormError = null
                             }
                         }
-                        showEditDialog = false
-                        taskToEdit = null
                     }
                 ) {
                     Text("Guardar")
@@ -120,6 +142,7 @@ fun TaskScreen(
                     onClick = {
                         showEditDialog = false
                         taskToEdit = null
+                        editFormError = null
                     }
                 ) {
                     Text("Cancelar")
@@ -194,18 +217,34 @@ fun TaskScreen(
                     style = MaterialTheme.typography.titleMedium,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
+                if (formError != null) {
+                    Text(
+                        text = formError!!,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                }
                 OutlinedTextField(
                     value = newTitle,
-                    onValueChange = { newTitle = it },
-                    label = { Text("Título") },
+                    onValueChange = {
+                        newTitle = it
+                        formError = null
+                    },
+                    label = { Text("Título *") },
+                    isError = formError != null && newTitle.isBlank(),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = newDescription,
-                    onValueChange = { newDescription = it },
-                    label = { Text("Descripción") },
+                    onValueChange = {
+                        newDescription = it
+                        formError = null
+                    },
+                    label = { Text("Descripción *") },
+                    isError = formError != null && newDescription.isBlank(),
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
                 )
@@ -216,17 +255,20 @@ fun TaskScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "Las tareas se guardan localmente hasta subirlas",
+                        text = "Ambos campos son obligatorios",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f)
                     )
                     Button(
                         onClick = {
-                            if (newTitle.isNotBlank()) {
+                            if (newTitle.isBlank() || newDescription.isBlank()) {
+                                formError = "Debes completar tanto el título como la descripción."
+                            } else {
                                 viewModel.addTask(newTitle, newDescription)
                                 newTitle = ""
                                 newDescription = ""
+                                formError = null
                             }
                         }
                     ) {
@@ -349,6 +391,7 @@ fun TaskScreen(
                                 taskToEdit = task
                                 editTitle = task.title
                                 editDescription = task.description
+                                editFormError = null
                                 showEditDialog = true
                             },
                             onDeleteClick = {
