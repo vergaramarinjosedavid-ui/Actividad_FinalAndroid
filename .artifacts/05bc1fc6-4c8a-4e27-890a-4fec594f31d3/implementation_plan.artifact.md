@@ -1,36 +1,39 @@
-# Implementation Plan - Draft Repository and Publish Logic
+# Implementation Plan - Stabilize Build and Fix App Crash
 
-This plan outlines creating the draft repository implementation using Room and the four requested use cases, highlighting the secure transaction logic inside `PublishDraftUseCase`.
+The application is currently failing to build due to a KSP internal error (`unexpected jvm signature V`) and previously crashed due to Room implementation missing. I will switch to `kapt` (the traditional annotation processor) and disable the "built-in Kotlin" feature that conflicts with it, ensuring a stable and working build.
+
+## User Review Required
+
+> [!IMPORTANT]
+> I am switching from `KSP` to `KAPT` for Room database processing. While `KSP` is newer, it is currently having compatibility issues with your environment's Kotlin version. `KAPT` is a mature and stable alternative that will fix the "AppDatabase_Impl does not exist" error.
 
 ## Proposed Changes
 
-### Data Layer - Repositories
+### Build Configuration
 
-#### [NEW] [DraftRepositoryImpl.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/data/repository/DraftRepositoryImpl.kt)
-Implement the `DraftRepository` interface interacting with `TaskDraftDao`:
-- `getDrafts(ownerId: String)`: Calls `taskDraftDao.getDrafts(ownerId)`.
-- `saveDraft(draft: TaskDraftEntity)`: Calls `taskDraftDao.insertDraft(draft)`.
-- `deleteDraft(id: Int)`: Calls `taskDraftDao.deleteDraftById(id)`.
+#### [MODIFY] [libs.versions.toml](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/gradle/libs.versions.toml)
+- Set `kotlin = "1.9.24"`.
+- Remove `ksp` versions and plugins.
+- Ensure `room = "2.6.1"`.
 
-### Domain Layer - Use Cases
+#### [MODIFY] [gradle.properties](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/gradle.properties)
+- Add `android.builtInKotlin=false` to allow using `kapt`.
+- Ensure `android.disallowKotlinSourceSets=false`.
 
-#### [NEW] [GetDraftsUseCase.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/usecase/draft/GetDraftsUseCase.kt)
-- Exposes `operator fun invoke(ownerId: String): Flow<List<TaskDraftEntity>>`.
+#### [MODIFY] [build.gradle.kts (root)](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/build.gradle.kts)
+- Use standard `alias(libs.plugins.kotlin.android) apply false` instead of compose plugin at root if needed, or keep it if versioned correctly.
 
-#### [NEW] [SaveDraftUseCase.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/usecase/draft/SaveDraftUseCase.kt)
-- Exposes `suspend operator fun invoke(draft: TaskDraftEntity): Long`.
-
-#### [NEW] [DeleteDraftUseCase.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/usecase/draft/DeleteDraftUseCase.kt)
-- Exposes `suspend operator fun invoke(id: Int)`.
-
-#### [NEW] [PublishDraftUseCase.kt](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/src/main/java/com/example/actividad_finalandroid/domain/usecase/draft/PublishDraftUseCase.kt)
-- Injects both `DraftRepository` and `TaskRepository`.
-- Maps a `TaskDraftEntity` into a Firestore `Task` instance.
-- Calls `taskRepository.insertTask(task)`.
-- If successful (`onSuccess`), deletes the local draft from Room via `draftRepository.deleteDraft(draft.id)`.
-- If an error occurs, it leaves the local draft intact and returns the failure state.
+#### [MODIFY] [app/build.gradle.kts](file:///C:/Users/USUARIO/AndroidStudioProjects/Actividad_FinalAndroid/app/build.gradle.kts)
+- Apply `id("org.jetbrains.kotlin.kapt")`.
+- Update `compileSdk` to `35` and `targetSdk` to `34` for better compatibility with current stable libraries.
+- Replace `ksp(libs.androidx.room.compiler)` with `kapt(libs.androidx.room.compiler)`.
 
 ## Verification Plan
 
 ### Automated Verification
-- Run `app:assembleDebug` to verify compilation.
+- Run `gradlew clean app:assembleDebug`.
+- Verify the build finishes successfully.
+
+### Manual Verification
+- Deploy the app to the emulator.
+- Confirm the app opens to the Login/Register screen without the "keeps stopping" error.

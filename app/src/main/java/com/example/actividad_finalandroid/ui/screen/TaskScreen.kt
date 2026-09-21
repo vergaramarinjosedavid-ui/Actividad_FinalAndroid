@@ -20,6 +20,7 @@ import com.example.actividad_finalandroid.ui.state.TaskViewModel
 fun TaskScreen(
     viewModel: TaskViewModel,
     onLogoutClick: () -> Unit,
+    onNavigateToDrafts: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val uiState by viewModel.taskUiState.collectAsState()
@@ -41,11 +42,17 @@ fun TaskScreen(
                 text = "Mis Tareas",
                 style = MaterialTheme.typography.headlineLarge
             )
-            TextButton(onClick = onLogoutClick) {
-                Text(
-                    text = "Cerrar Sesión",
-                    color = MaterialTheme.colorScheme.error
-                )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TextButton(onClick = onNavigateToDrafts) {
+                    Text("Borradores")
+                }
+                Spacer(modifier = Modifier.width(4.dp))
+                TextButton(onClick = onLogoutClick) {
+                    Text(
+                        text = "Salir",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
 

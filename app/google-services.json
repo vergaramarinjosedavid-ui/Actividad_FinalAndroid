@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "123456789012",
-    "project_id": "taskmanager-mock-id",
-    "storage_bucket": "taskmanager-mock-id.appspot.com"
+    "project_number": "237877769076",
+    "project_id": "taskmanagerapp-ed010",
+    "storage_bucket": "taskmanagerapp-ed010.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:123456789012:android:abcdef1234567890",
+        "mobilesdk_app_id": "1:237877769076:android:fd3d24bbe09d1052a0f221",
         "android_client_info": {
           "package_name": "com.example.actividad_finalandroid"
         }
@@ -15,15 +15,15 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyMockKeyMockKeyMockKey_MockKey"
+          "current_key": "AIzaSyDChOuauu1Vhz1OUFcbKgMgUvQ4v7oTYEI"
         }
       ],
       "services": {
-        "appdetect_service": {
-          "status": 1
+        "appinvite_service": {
+          "other_platform_oauth_client": []
         }
       }
     }
   ],
-  "configuration_version": "3"
+  "configuration_version": "1"
 }

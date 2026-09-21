@@ -41,6 +41,20 @@ class MainActivity : ComponentActivity() {
         val updateTaskUseCase = UpdateTaskUseCase(taskRepository)
         val deleteTaskUseCase = DeleteTaskUseCase(taskRepository)
 
+        // Room instances & Draft usecases setup
+        val db = androidx.room.Room.databaseBuilder(
+            applicationContext,
+            com.example.actividad_finalandroid.data.local.AppDatabase::class.java,
+            "taskmanager_db"
+        ).build()
+        val draftDao = db.taskDraftDao()
+        val draftRepository = com.example.actividad_finalandroid.data.repository.DraftRepositoryImpl(draftDao)
+        
+        val getDraftsUseCase = com.example.actividad_finalandroid.domain.usecase.draft.GetDraftsUseCase(draftRepository)
+        val saveDraftUseCase = com.example.actividad_finalandroid.domain.usecase.draft.SaveDraftUseCase(draftRepository)
+        val deleteDraftUseCase = com.example.actividad_finalandroid.domain.usecase.draft.DeleteDraftUseCase(draftRepository)
+        val publishDraftUseCase = com.example.actividad_finalandroid.domain.usecase.draft.PublishDraftUseCase(draftRepository, taskRepository)
+
         enableEdgeToEdge()
         setContent {
             Actividad_FinalAndroidTheme {
@@ -54,6 +68,10 @@ class MainActivity : ComponentActivity() {
                         getTasksUseCase = getTasksUseCase,
                         updateTaskUseCase = updateTaskUseCase,
                         deleteTaskUseCase = deleteTaskUseCase,
+                        getDraftsUseCase = getDraftsUseCase,
+                        saveDraftUseCase = saveDraftUseCase,
+                        deleteDraftUseCase = deleteDraftUseCase,
+                        publishDraftUseCase = publishDraftUseCase,
                         modifier = Modifier.padding(innerPadding)
                     )
                 }

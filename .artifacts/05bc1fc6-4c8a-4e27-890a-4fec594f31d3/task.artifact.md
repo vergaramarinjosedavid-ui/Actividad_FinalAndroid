@@ -1,16 +1,6 @@
-- [x] Create base MVVM package structure
-- [x] Create domain/model/Task.kt data class
-- [x] Add Room dependencies
-- [x] Create data/local/entity/TaskDraftEntity.kt
-- [x] Create domain/repository interfaces
-- [x] Create AuthRepository interface and AuthRepositoryImpl
-- [x] Create individual Authentication Use Cases
-- [x] Create Register MVVM components (State, ViewModel, Screen)
-- [x] Add Navigation Compose dependencies
-- [x] Create Login MVVM components (State, ViewModel, Screen)
-- [x] Implement Secure Navigation Graph and automatic redirection
-- [x] Implement Firestore TaskRepositoryImpl
-- [x] Create individual Task Use Cases (Create, Get, Update, Delete)
-- [x] Create Task MVVM components (State, ViewModel, Screen) and update NavGraph
-- [x] Create TaskDraftDao and AppDatabase using Room
-- [x] Implement DraftRepositoryImpl and Draft Use Cases (Get, Save, Delete, Publish)
+- [x] Fix App Crash and Stabilize Build
+    - [x] Update libs.versions.toml (Kotlin 2.0.21, stable dependencies)
+    - [x] Configure gradle.properties (enable AndroidX, Jetifier, disable builtInKotlin)
+    - [x] Update root build.gradle.kts (align plugin versions)
+    - [x] Update app build.gradle.kts (apply KAPT, update Room compiler, adjust minSdk to 26)
+    - [x] Synchronize and Build

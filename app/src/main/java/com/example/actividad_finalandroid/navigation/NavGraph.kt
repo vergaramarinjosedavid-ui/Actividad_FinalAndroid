@@ -10,13 +10,19 @@ import com.example.actividad_finalandroid.domain.usecase.auth.GetCurrentUserUseC
 import com.example.actividad_finalandroid.domain.usecase.auth.LoginUserUseCase
 import com.example.actividad_finalandroid.domain.usecase.auth.LogoutUserUseCase
 import com.example.actividad_finalandroid.domain.usecase.auth.RegisterUserUseCase
+import com.example.actividad_finalandroid.domain.usecase.draft.DeleteDraftUseCase
+import com.example.actividad_finalandroid.domain.usecase.draft.GetDraftsUseCase
+import com.example.actividad_finalandroid.domain.usecase.draft.PublishDraftUseCase
+import com.example.actividad_finalandroid.domain.usecase.draft.SaveDraftUseCase
 import com.example.actividad_finalandroid.domain.usecase.task.CreateTaskUseCase
 import com.example.actividad_finalandroid.domain.usecase.task.DeleteTaskUseCase
 import com.example.actividad_finalandroid.domain.usecase.task.GetTasksUseCase
 import com.example.actividad_finalandroid.domain.usecase.task.UpdateTaskUseCase
+import com.example.actividad_finalandroid.ui.screen.DraftsScreen
 import com.example.actividad_finalandroid.ui.screen.LoginScreen
 import com.example.actividad_finalandroid.ui.screen.RegisterScreen
 import com.example.actividad_finalandroid.ui.screen.TaskScreen
+import com.example.actividad_finalandroid.ui.state.DraftViewModel
 import com.example.actividad_finalandroid.ui.state.LoginViewModel
 import com.example.actividad_finalandroid.ui.state.RegisterViewModel
 import com.example.actividad_finalandroid.ui.state.TaskViewModel
@@ -31,6 +37,10 @@ fun NavGraph(
     getTasksUseCase: GetTasksUseCase,
     updateTaskUseCase: UpdateTaskUseCase,
     deleteTaskUseCase: DeleteTaskUseCase,
+    getDraftsUseCase: GetDraftsUseCase,
+    saveDraftUseCase: SaveDraftUseCase,
+    deleteDraftUseCase: DeleteDraftUseCase,
+    publishDraftUseCase: PublishDraftUseCase,
     modifier: Modifier = Modifier,
     navController: NavHostController = rememberNavController()
 ) {
@@ -94,6 +104,27 @@ fun NavGraph(
                         popUpTo(Screen.Home.route) { inclusive = true }
                         launchSingleTop = true
                     }
+                },
+                onNavigateToDrafts = {
+                    navController.navigate(Screen.Drafts.route)
+                }
+            )
+        }
+
+        composable(Screen.Drafts.route) {
+            val draftViewModel = androidx.compose.runtime.remember {
+                DraftViewModel(
+                    getDraftsUseCase = getDraftsUseCase,
+                    saveDraftUseCase = saveDraftUseCase,
+                    deleteDraftUseCase = deleteDraftUseCase,
+                    publishDraftUseCase = publishDraftUseCase,
+                    getCurrentUserUseCase = getCurrentUserUseCase
+                )
+            }
+            DraftsScreen(
+                viewModel = draftViewModel,
+                onBackClick = {
+                    navController.popBackStack()
                 }
             )
         }
